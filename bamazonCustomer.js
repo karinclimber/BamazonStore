@@ -48,8 +48,11 @@ inquirer.prompt(
         // console.log(answer.itemID);
           connection.query("SELECT * FROM products WHERE ?", {item_id: answer.itemID}, function(err, res) {
             if (err) throw (err);
+            
             console.log("You chose " + res[0].product_name + " for " + "$" + res[0].price + "!");
             var chosenItem = answer.itemID;
+            //add validate
+            //  { console.log("Sorry I don't recognize that number, please give a valid Item_ID")}
             // console.log(chosenItem);
             
 //prompt user for a quantity     
@@ -67,28 +70,38 @@ inquirer.prompt(
                 if (err) throw (err);
                 if (res[0].stock_quantity >= answer.quantity) {
                   console.log(colors.blue("It looks like we have plenty."));
-                  console.log(colors.green("Including tax, your total is " + "$" + 1.07*(parseInt(answer.quantity)*parseInt(res[0].price)) + "!"));
+                  console.log(colors.green("Including tax, your total is " + "$" + (1.07*(parseInt(answer.quantity)*parseInt(res[0].price))).toFixed(2) + "!"));
                   confirm("Do you want to proceed with your order?")
                   .then(function confirmed() {
                     console.log("Great!! Enjoy your new " + res[0].product_name + "!");
-                  }), function cancelled() {
+                    // console.log(res[0].product_name);
+                    var newStock = (parseInt(res[0].stock_quantity)) - (parseInt(answer.quantity));
+                    // console.log(newStock);
+                  connection.query("UPDATE products SET ? WHERE ?", [{stock_quantity: newStock}, {product_name: res[0].product_name}], function(err, res){
+                    var timer2 = setTimeout(start, 2000)
+                    if (err) throw err;
+                  })
+                  }, function cancelled() {
                     console.log("Sorry to hear that. Please come back when you are ready!")
-                  }
+                    var timer2 = setTimeout(start, 2000)
+                  })
                 
-                  //figure out how to subtract from stock quantity in mysql
                 } else {
                   console.log(colors.red("Sorry, we don't have enough! We only have " + res[0].stock_quantity + "." + " Would you like to buy " + res[0].stock_quantity + "?"));
                   confirm("Do you want to proceed with this order?")
                   .then(function confirmed() {
-                    console.log("Great!! Enjoy your new " + res[0].product_name + "!");
-                  }), function cancelled() {
-                    console.log("Sorry to hear that. Please come back when you are ready!")
-                  }
-                  //prompt.confirm, yes/no. yes subtract from stock quantity
-                }
-               })
-            }
-          
+                    console.log(colors.green("Including tax, your total is " + "$" + (1.07*(parseInt(res[0].stock_quantity)*parseInt(res[0].price))).toFixed(2) + "!"));
+                    console.log(colors.blue("Enjoy your new " + res[0].product_name + "!"));
+                  connection.query("UPDATE products SET ? WHERE ?", [{stock_quantity: 0}, {product_name: res[0].product_name}], function(err, res){
+                      var timer2 = setTimeout(start, 2000)
+                  }, function cancelled() {
+                    console.log(colors.red("Sorry to hear that. Please come back when you are ready!"));
+                    var timer2 = setTimeout(start, 2000)
+                  })
+                })
+               }
+            })
+          }
     })
    })
 })
