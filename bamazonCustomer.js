@@ -71,7 +71,7 @@ inquirer.prompt(
                 if (res[0].stock_quantity >= answer.quantity) {
                   console.log(colors.blue("It looks like we have plenty."));
                   console.log(colors.green("Including tax, your total is " + "$" + (1.07*(parseInt(answer.quantity)*parseInt(res[0].price))).toFixed(2) + "!"));
-                  confirm("Do you want to proceed with your order?")
+                confirm("Do you want to proceed with your order?")
                   .then(function confirmed() {
                     console.log("Great!! Enjoy your new " + res[0].product_name + "!");
                     // console.log(res[0].product_name);
